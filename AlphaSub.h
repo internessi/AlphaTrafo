@@ -1,5 +1,5 @@
 void setupSERIAL(){
-  delay(5000);
+  delay(3000);
   Serial.begin(115200);
   delay(1000); Serial.println();
   delay(1000); Serial.println("Starting Serial");
