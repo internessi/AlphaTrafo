@@ -8,3 +8,24 @@ void setupSERIAL(){
   delay(1000); Serial.println(".");
   delay(3000);
   }
+
+
+void LEDred1000(){
+  digitalWrite(LED1, HIGH);
+  delay(1000);
+  digitalWrite(LED1, LOW); 
+}
+
+void LEDgreen1000(){
+  digitalWrite(LED2, HIGH);
+  delay(1000);
+  digitalWrite(LED2, LOW); 
+}
+
+void relaisON(){
+digitalWrite(RELAIS, HIGH); 
+}
+
+void relaisOFF(){
+digitalWrite(RELAIS, LOW);
+}
