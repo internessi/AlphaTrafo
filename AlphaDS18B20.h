@@ -5,31 +5,20 @@ const int oneWireBus = 13;            // GPIO where the DS18B20
 OneWire oneWire(oneWireBus);          // Setup a oneWire instance
 DallasTemperature sensors(&oneWire);  // Pass our oneWire reference
 
-void setupDS18B20(){
-  if(DS18B20){
-    sensors.begin();
-    Serial.println("Starting DS18B20 sensor");
-    delay(1000);
-    sensors.requestTemperatures(); 
-    float temperatureC = sensors.getTempCByIndex(0);
-    float temperatureF = sensors.getTempFByIndex(0);
-    Serial.print(temperatureC);
-    Serial.println("ºC");
-    Serial.print(temperatureF);
-    Serial.println("ºF");
-    }// end DS18B20
-}
-
+float tmpDS18B20 = 0;
 
 void readDS18B20(){
   if(DS18B20){
     sensors.begin();
     sensors.requestTemperatures(); 
-    float temperatureC = sensors.getTempCByIndex(0);
-    float temperatureF = sensors.getTempFByIndex(0);
-    Serial.print(temperatureC);
-    Serial.println("ºC");
-    Serial.print(temperatureF);
-    Serial.println("ºF");
+    tmpDS18B20 = (round((sensors.getTempCByIndex(0)*10))/10);
+    Serial.println("DS18B20: " + String(tmpDS18B20) + "ºC");
+    }// end DS18B20
+}
+
+void setupDS18B20(){
+  if(DS18B20){
+    readDS18B20();
+    Serial.println("DS18B20 -> initialized");
     }// end DS18B20
 }
