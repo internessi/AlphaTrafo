@@ -4,8 +4,8 @@
 int RELAIS = 4;
 int LED1 = 14;
 int LED2 = 12;
-int adrBSZ= 0;
-long BSZ = 0;
+int adrBMZ= 0;
+long BMZ = 0;
 float dp = 0;
 
 void setupSERIAL(){
@@ -37,15 +37,15 @@ void calcDP(){
 
 void setupEEPROM() { 
   EEPROM.begin(32);
-  EEPROM.get(adrBSZ, BSZ);                          // load BSZ 
-  if(BSZ<0){                                        // no BSZ?
-    EEPROM.put(adrBSZ, BSZ);                        // write 0
+  EEPROM.get(adrBMZ, BMZ);                          // load BMZ 
+  if(BMZ<0){                                        // no BMZ?
+    EEPROM.put(adrBMZ, BMZ);                        // write 0
     EEPROM.commit();
     delay(10);
-    EEPROM.get(adrBSZ, BSZ);                        // load BSZ 
-    Serial.println("BSZ -> initialized");  
-  } // if(BSZ<0)
-  Serial.println("BSZ: " + String(BSZ));   
+    EEPROM.get(adrBMZ, BMZ);                        // load BMZ 
+    Serial.println("BMZ -> initialized");  
+  } // if(BMZ<0)
+  Serial.println("BMZ: " + String(BMZ));   
 } // setupEEPROM
 
 void LEDred1000(){
@@ -57,6 +57,15 @@ void LEDred1000(){
 void LEDgreen1000(){
   digitalWrite(LED2, HIGH);
   delay(1000);
+  digitalWrite(LED2, LOW); 
+}
+
+void LEDredgreen(){
+  digitalWrite(LED1, HIGH);
+  delay(300);
+  digitalWrite(LED1, LOW); 
+  digitalWrite(LED2, HIGH);
+  delay(300);
   digitalWrite(LED2, LOW); 
 }
 

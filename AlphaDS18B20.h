@@ -5,14 +5,28 @@ const int oneWireBus = 13;            // GPIO where the DS18B20
 OneWire oneWire(oneWireBus);          // Setup a oneWire instance
 DallasTemperature sensors(&oneWire);  // Pass our oneWire reference
 
-float tmpDS18B20 = 0;
-
 void readDS18B20(){
   if(DS18B20){
     sensors.begin();
     sensors.requestTemperatures(); 
     tmpDS18B20 = (round((sensors.getTempCByIndex(0)*10))/10);
-    Serial.println("DS18B20: " + String(tmpDS18B20) + "ºC");
+    while(tmpDS18B20<-25){
+      digitalWrite(LED1, HIGH);
+      delay(250);
+      digitalWrite(LED1, LOW); 
+      delay(250);
+      digitalWrite(LED1, HIGH);
+      delay(250);
+      digitalWrite(LED1, LOW); 
+      delay(250);
+      digitalWrite(LED1, HIGH);
+      delay(250);
+      digitalWrite(LED1, LOW); 
+      delay(1750);
+      sensors.begin();
+      sensors.requestTemperatures(); 
+      tmpDS18B20 = (round((sensors.getTempCByIndex(0)*10))/10);
+    }// while DS18B20 not connected
     }// end DS18B20
 }
 
