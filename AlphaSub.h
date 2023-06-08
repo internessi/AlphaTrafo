@@ -8,12 +8,20 @@ int adrBMZ= 0;
 long BMZ = 0;
 float dp = 0;
 
-void setupSERIAL(){
-  delay(1000);
-  Serial.begin(115200);
-  delay(1000); Serial.println();
-  delay(1000); Serial.println("AlphaTrafo");
-  delay(1000);
+void LEDredgreenfast(){
+  digitalWrite(LED1, HIGH);
+  delay(75);
+  digitalWrite(LED1, LOW); 
+  digitalWrite(LED2, HIGH);
+  delay(75);
+  digitalWrite(LED2, LOW); 
+}
+
+void setupSERIAL(){ 
+  delay(1000); LEDredgreenfast();  Serial.begin(115200);
+  delay(1000); LEDredgreenfast();  Serial.println(); 
+  delay(1000); LEDredgreenfast();  Serial.println("AlphaTrafo");
+  delay(1000); LEDredgreenfast();
   }
 
 void setupGPIO(){
@@ -69,6 +77,29 @@ void LEDredgreen(){
   digitalWrite(LED2, LOW); 
 }
 
+void LEDredred(){
+  digitalWrite(LED1, HIGH);
+  delay(300);
+  digitalWrite(LED1, LOW); 
+  delay(300);
+  digitalWrite(LED1, HIGH);
+  delay(300);
+  digitalWrite(LED1, LOW); 
+}
+
+void LEDredredred(){
+  digitalWrite(LED1, HIGH);
+  delay(200);
+  digitalWrite(LED1, LOW); 
+  delay(200);
+  digitalWrite(LED1, HIGH);
+  delay(200);
+  digitalWrite(LED1, LOW); 
+  delay(200);
+  digitalWrite(LED1, HIGH);
+  delay(200);
+  digitalWrite(LED1, LOW); 
+}
 void relaisON(){
 digitalWrite(RELAIS, HIGH); 
 }
