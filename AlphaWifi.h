@@ -1,3 +1,6 @@
+// AlphaTrafo by Frank Wolf - 06/2023 
+// the code is documentation enough !
+
 #include <DNSServer.h>
 #include <WiFi.h>
 #include <AsyncTCP.h>

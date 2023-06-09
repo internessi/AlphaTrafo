@@ -1,3 +1,6 @@
+// AlphaTrafo by Frank Wolf - 06/2023 
+// the code is documentation enough !
+
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
@@ -27,12 +30,5 @@ void readDS18B20(){
       sensors.requestTemperatures(); 
       tmpDS18B20 = (round((sensors.getTempCByIndex(0)*10))/10);
     }// while DS18B20 not connected
-    }// end DS18B20
-}
-
-void setupDS18B20(){
-  if(DS18B20){
-    readDS18B20();
-    Serial.println("DS18B20 -> initialized");
     }// end DS18B20
 }

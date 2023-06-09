@@ -1,3 +1,6 @@
+// AlphaTrafo by Frank Wolf - 06/2023 
+// the code is documentation enough !
+
 #include <SHT1x-ESP.h>
 
 // Specify data and clock connections and instantiate SHT1x object
@@ -23,10 +26,3 @@ void readSHT11(){
     }// while DS18B20 not connected    
     }
   }
-
-void setupSHT11(){
-  if(SHT11){
-    readSHT11();
-    Serial.println("SHT11 -> initialized");     
-  }
-}
