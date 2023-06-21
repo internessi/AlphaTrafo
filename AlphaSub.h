@@ -3,12 +3,15 @@
 
 #include <EEPROM.h>
 #include <math.h>
+#include <WiFi.h>       // standard library
 
 int RELAIS = 4;
 int LED1 = 14;
 int LED2 = 12;
 int adrBMZ= 0;
 long BMZ = 0;
+int BSZ = 0;
+int BSZM = 0;
 float dp = 0;
 
 void LEDredgreenfast(){
@@ -109,6 +112,17 @@ void LEDredred(){
   digitalWrite(LED1, HIGH);
   delay(300);
   digitalWrite(LED1, LOW); 
+}
+
+
+void LEDgreengreen(){
+  digitalWrite(LED2, HIGH);
+  delay(300);
+  digitalWrite(LED2, LOW); 
+  delay(300);
+  digitalWrite(LED2, HIGH);
+  delay(300);
+  digitalWrite(LED2, LOW); 
 }
 
 void LEDredredred(){

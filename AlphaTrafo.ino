@@ -27,9 +27,9 @@ int drewPointOffset = 2;
 #define TIME_TO_SLEEP  10                   // 30 secounds at release
 RTC_DATA_ATTR int bootCount = 0;
 esp_sleep_wakeup_cause_t wakeup_reason;
-
-#include "AlphaWifi.h"                      // #include <DNSServer.h>, <WiFi.h>, <AsyncTCP.h>, <ESPAsyncWebSrv.h>
 #include "AlphaSub.h"                       // #include <EEPROM.h>, <math.h>
+#include "AlphaWifi.h"                      // #include <DNSServer.h>, <WiFi.h>, <AsyncTCP.h>, <ESPAsyncWebSrv.h>
+
 #include "AlphaSHT11.h"                     // #include <SHT1x-ESP.h>
 #include "AlphaDS18B20.h"                   // #include <OneWire.h>, <DallasTemperature.h>
 
@@ -85,15 +85,29 @@ void setup(){
   // upon esp getting /XML string, ESP will build and send the XML, this is how we refresh
   // just parts of the web page
   server.on("/xml", SendXML);
+  server.on("/BSZ_RESET", Bsz_Reset);
+  server.on("/HEAT_5", ProcessHeat_5);
+  server.on("/HEAT_10", ProcessHeat_10);
+  server.on("/HEAT_20", ProcessHeat_20);
+  server.on("/HEAT_30", ProcessHeat_30);
+  server.on("/HEAT_40", ProcessHeat_40);
+  server.on("/HEAT_50", ProcessHeat_50);
+  server.on("/REG_5", ProcessReg_5);
+  server.on("/REG_10", ProcessReg_10);
+  server.on("/REG_20", ProcessReg_20);
+  server.on("/REG_30", ProcessReg_30);
+  server.on("/REG_40", ProcessReg_40);
+  server.on("/REG_50", ProcessReg_50);  
+  server.on("/TMP_6", ProcessTmp_6);
+  server.on("/TMP_8", ProcessTmp_8);
+  server.on("/TMP_10", ProcessTmp_10);
+  server.on("/TMP_12", ProcessTmp_12);
+  server.on("/TMP_14", ProcessTmp_14);
+  server.on("/TMP_16", ProcessTmp_16);  
 
-  // upon ESP getting /UPDATE_SLIDER string, ESP will execute the UpdateSlider function
-  // same notion for the following .on calls
-  // add as many as you need to process incoming strings from your web page
-  // as you can imagine you will need to code some javascript in your web page to send such strings
-  // this process will be documented in the SuperMon.h web page code
-  server.on("/UPDATE_SLIDER", UpdateSlider);
-  server.on("/BUTTON_0", ProcessButton_0);
-  server.on("/BUTTON_1", ProcessButton_1);
+
+
+    
 
   // finally begin the server
   server.begin();
@@ -110,17 +124,17 @@ void setup(){
     setupBlink();                           // SUB - setup blink 3x, write AlphaTrafo
     setupEEPROM();                          // SUB - setup EEPROM, BMZ init
     readSHT11();                            // SHT11 - setup SHT11
-    delay(1000); LEDredgreenfast(); 
-    readSHT11();                            // read SHT11 
-    Serial.println("HUM Luft : " + String(humSHT11) + "%"); 
-    Serial.println("TMP Luft : " + String(tmpSHT11) + "ºC");
-    readDS18B20();                          // read DS18B20
-    Serial.println("TMP Wand: " + String(tmpDS18B20) + "ºC");
-    calcDP();                               // calculate drew point
-    delay(1000); LEDredgreenfast(); 
-    Serial.println("TP: " + String(dp) + "ºC"); 
+    //delay(1000); LEDredgreenfast(); 
+   // readSHT11();                            // read SHT11 
+   // Serial.println("HUM Luft : " + String(humSHT11) + "%"); 
+    //Serial.println("TMP Luft : " + String(tmpSHT11) + "ºC");
+   // readDS18B20();                          // read DS18B20
+   // Serial.println("TMP Wand: " + String(tmpDS18B20) + "ºC");
+   // calcDP();                               // calculate drew point
+   // delay(1000); LEDredgreenfast(); 
+   // Serial.println("TP: " + String(dp) + "ºC"); 
  //   setupCAPTIVE();                         // WIFI - setup captive
-    delay(1000); LEDredgreenfast(); 
+    //delay(1000); LEDredgreenfast(); 
     Serial.println("- - - - -");            // exit setup
   }
 }
