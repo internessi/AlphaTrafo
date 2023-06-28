@@ -1,18 +1,18 @@
 // AlphaTrafo by Frank Wolf - 06/2023 
 // the code is documentation enough !
 
+#include <Arduino.h>                                /* Start ESP32 */
 #include <EEPROM.h>
 #include <math.h>
 #include <WiFi.h>       // standard library
 
-int RELAIS = 4;
-int LED1 = 14;
-int LED2 = 12;
-int adrBMZ= 0;
-long BMZ = 0;
 int BSZ = 0;
 int BSZM = 0;
 float dp = 0;
+
+int RELAIS = 4;
+int LED1 = 14;
+int LED2 = 12;
 
 void LEDredgreenfast(){
   digitalWrite(LED1, HIGH);
@@ -21,6 +21,27 @@ void LEDredgreenfast(){
   digitalWrite(LED2, HIGH);
   delay(75);
   digitalWrite(LED2, LOW); 
+}
+
+String arbitraryBase( unsigned long value, int base) {
+    static char baseChars[] = "ZWAFBCDEFGHIJKLMNZPFRSTUV71234WXYZABCDEF7123456789GHIJKLM6789NZPHRSTUVWXYZPB";
+    String result = "";
+    do {
+         result = String(baseChars[value % base]) + result;  // Add on the left
+         value /= base;
+         } while (value != 0);
+    return result;
+}
+
+void MacSerial() {
+  uint8_t baseMac[7];
+  esp_read_mac(baseMac, ESP_MAC_WIFI_STA);
+  mac_adr = (baseMac[2]) + (baseMac[3] * 213) + (baseMac[4] * 231 * 253) + (baseMac[5] * 237 * 219 * 251);
+  mac_adr = mac_adr + 1321754191;
+  sn = arbitraryBase(mac_adr, 68);
+  if (sn.length() > 5) {
+    sn = sn.substring(0, 5);
+  }
 }
 
 void setupGPIO(){
@@ -65,15 +86,54 @@ void espSleep(){
 }
 
 void setupEEPROM() { 
-    EEPROM.get(adrBMZ, BMZ);                         // load BMZ 
+// long BMZ                 0, 1, 2, 3  
+// int heatMinute           6, 7
+// int regenerateMinutes    10, 11
+// int tempLimit            14, 15
+  EEPROM.get(0, BMZ);                               // load BMZ 
   if(BMZ<0){                                        // no BMZ?
-    EEPROM.put(adrBMZ, BMZ);                        // write 0
+    BMZ = 0;                 
+    EEPROM.put(0, BMZ);                             // write 0
     EEPROM.commit();
     delay(10);
-    EEPROM.get(adrBMZ, BMZ);                        // load BMZ 
+    EEPROM.get(0, BMZ);                             // load BMZ 
     Serial.println("BMZ -> initialized");  
-  } // if(BMZ<0)
-  Serial.println("BMZ: " + String(BMZ));   
+  } // if(BMZ<1)
+  Serial.println("BMZ: " + String(BMZ)); 
+   
+  EEPROM.get(6, heatMinutes);                        // load 
+  if(heatMinutes<1){                                 // nothing?
+    heatMinutes = 2;          
+    EEPROM.put(6, heatMinutes);                      // write 
+    EEPROM.commit();
+    delay(10);
+    EEPROM.get(6, heatMinutes);                      // load  
+    Serial.println("heatMinutes -> initialized");  
+  } // if(heatMinutes<1)
+  Serial.println("heatMinutes: " + String(heatMinutes));  
+  
+  EEPROM.get(10, regenerateMinutes);                 // load  
+  if(regenerateMinutes<1){                          // nothing?
+    regenerateMinutes = 1;          
+    EEPROM.put(10, regenerateMinutes);               // write 
+    EEPROM.commit();
+    delay(10);
+    EEPROM.get(10, regenerateMinutes);               // load BMZ 
+    Serial.println("regenerateMinutes -> initialized");  
+  } // if(regenerateMinutes<1)
+  Serial.println("regenerateMinutes: " + String(regenerateMinutes));  
+  
+  EEPROM.get(14, tempLimit);                         // load 
+  if(tempLimit <1){                                 // nothing?
+    tempLimit = 12;  
+    EEPROM.put(14, tempLimit);                       // write 
+    EEPROM.commit();
+    delay(10);
+    EEPROM.get(14, tempLimit);                       // load 
+    Serial.println("tempLimit  -> initialized");  
+  } // if(tempLimit<1)
+  Serial.println("tempLimit: " + String(tempLimit));  
+    
 } // setupEEPROM
 
 void setupBlink(){
@@ -84,18 +144,21 @@ void setupBlink(){
 }
 
 void LEDred1000(){
+  digitalWrite(LED2, LOW); 
   digitalWrite(LED1, HIGH);
   delay(1000);
   digitalWrite(LED1, LOW); 
 }
 
 void LEDgreen1000(){
+  digitalWrite(LED1, LOW);
   digitalWrite(LED2, HIGH);
   delay(1000);
   digitalWrite(LED2, LOW); 
 }
 
 void LEDredgreen(){
+  digitalWrite(LED2, LOW); 
   digitalWrite(LED1, HIGH);
   delay(300);
   digitalWrite(LED1, LOW); 
@@ -105,6 +168,7 @@ void LEDredgreen(){
 }
 
 void LEDredred(){
+  digitalWrite(LED2, LOW); 
   digitalWrite(LED1, HIGH);
   delay(300);
   digitalWrite(LED1, LOW); 
@@ -126,6 +190,7 @@ void LEDgreengreen(){
 }
 
 void LEDredredred(){
+  digitalWrite(LED2, LOW); 
   digitalWrite(LED1, HIGH);
   delay(200);
   digitalWrite(LED1, LOW); 

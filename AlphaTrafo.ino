@@ -16,107 +16,48 @@ float tmpSHT11 = 0;                         // SHT11 - global float tmpSHT11
 float humSHT11 = 0;                         // SHT11 - global float humSHT11
 float tmpDS18B20 = 0;                       // DS18B20 - global float tmpDS18B20
 
-int tempLimit = 12;
-int heatMinutes = 2;
+long BMZ = 1;                 
+int heatMinutes = 2;          
+int regenerateMinutes = 1;     
+int tempLimit = 12;         
 int heatCycles = 0;
-int regenerateMinutes = 1;
 int regenerateCycles = 0;
 int drewPointOffset = 2;
+
+unsigned long wifiAvailable = 70000;
+unsigned long ms = millis();
+unsigned long mac_adr;
+String sn;
 
 #define uS_TO_S_FACTOR 1000000              // conversion micro to seconds 
 #define TIME_TO_SLEEP  10                   // 30 secounds at release
 RTC_DATA_ATTR int bootCount = 0;
 esp_sleep_wakeup_cause_t wakeup_reason;
+
 #include "AlphaSub.h"                       // #include <EEPROM.h>, <math.h>
 #include "AlphaWifi.h"                      // #include <DNSServer.h>, <WiFi.h>, <AsyncTCP.h>, <ESPAsyncWebSrv.h>
-
 #include "AlphaSHT11.h"                     // #include <SHT1x-ESP.h>
 #include "AlphaDS18B20.h"                   // #include <OneWire.h>, <DallasTemperature.h>
 
-
 void setup(){
-                    
+  delay(50);                    
   relaisOFF();                              // SUB - better be safe than sorry
+  delay(500);
   setupGPIO();                              // SUB - setup LED, RLY  
+  delay(500);
   Serial.begin(115200);                     // setup serial at 115200 
-
-  // if your web page or XML are large, you may not get a call back from the web page
-  // and the ESP will think something has locked up and reboot the ESP
-  // not sure I like this feature, actually I kinda hate it
-  // disable watch dog timer 0
-  disableCore0WDT();
-
-  // maybe disable watch dog timer 1 if needed
-  //  disableCore1WDT();
-
-  // just an update to progress
-  Serial.println("starting server");
-
-  // if you have this #define USE_INTRANET,  you will connect to your home intranet, again makes debugging easier
-#ifdef USE_INTRANET
-  WiFi.begin(LOCAL_SSID, LOCAL_PASS);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.print("IP address: "); Serial.println(WiFi.localIP());
-  Actual_IP = WiFi.localIP();
-#endif
-
-  // if you don't have #define USE_INTRANET, here's where you will creat and access point
-  // an intranet with no internet connection. But Clients can connect to your intranet and see
-  // the web page you are about to serve up
-#ifndef USE_INTRANET
-  WiFi.softAP(AP_SSID, AP_PASS);
-  delay(100);
-  WiFi.softAPConfig(PageIP, gateway, subnet);
-  delay(100);
-  Actual_IP = WiFi.softAPIP();
-  Serial.print("IP address: "); Serial.println(Actual_IP);
-#endif
-
-  printWifiStatus();
-
-
-  // these calls will handle data coming back from your web page
-  // this one is a page request, upon ESP getting / string the web page will be sent
-  server.on("/", SendWebsite);
-
-  // upon esp getting /XML string, ESP will build and send the XML, this is how we refresh
-  // just parts of the web page
-  server.on("/xml", SendXML);
-  server.on("/BSZ_RESET", Bsz_Reset);
-  server.on("/HEAT_5", ProcessHeat_5);
-  server.on("/HEAT_10", ProcessHeat_10);
-  server.on("/HEAT_20", ProcessHeat_20);
-  server.on("/HEAT_30", ProcessHeat_30);
-  server.on("/HEAT_40", ProcessHeat_40);
-  server.on("/HEAT_50", ProcessHeat_50);
-  server.on("/REG_5", ProcessReg_5);
-  server.on("/REG_10", ProcessReg_10);
-  server.on("/REG_20", ProcessReg_20);
-  server.on("/REG_30", ProcessReg_30);
-  server.on("/REG_40", ProcessReg_40);
-  server.on("/REG_50", ProcessReg_50);  
-  server.on("/TMP_6", ProcessTmp_6);
-  server.on("/TMP_8", ProcessTmp_8);
-  server.on("/TMP_10", ProcessTmp_10);
-  server.on("/TMP_12", ProcessTmp_12);
-  server.on("/TMP_14", ProcessTmp_14);
-  server.on("/TMP_16", ProcessTmp_16);  
-
-
-
-    
-
-  // finally begin the server
-  server.begin();
-
+  delay(500);
+  
+  MacSerial();
+  Serial.println("SN: " + sn);              // enter setup
+ 
+  wifi_main();                              // Start Wifi, enable hooks
 
   delay(1000); LEDredgreenfast();  
   Serial.println("- - - - -");              // enter setup
-  
-  // setModemSleep();                          // SUB - turn off WIFI/BT set CPU to 40 Mhz
+
+   
+  // setModemSleep();                       // SUB - turn off WIFI/BT set CPU to 40 Mhz
   EEPROM.begin(32);
   wakeup_reason = esp_sleep_get_wakeup_cause(); // preperation for deep sleep
   if (wakeup_reason != ESP_SLEEP_WAKEUP_TIMER)  // skipping init of sensors
@@ -133,34 +74,42 @@ void setup(){
    // calcDP();                               // calculate drew point
    // delay(1000); LEDredgreenfast(); 
    // Serial.println("TP: " + String(dp) + "ºC"); 
- //   setupCAPTIVE();                         // WIFI - setup captive
     //delay(1000); LEDredgreenfast(); 
-    Serial.println("- - - - -");            // exit setup
+    Serial.println("- - - - -");              // exit setup
   }
 }
 
 void loop(){
-
+  
   if (WEBSERVER) {
-    if ((millis() - SensorUpdate) >= 10000) {
-      //Serial.println("Reading Sensors");
+    if (millis() > wifiAvailable) {
+      WiFi.disconnect();
+      WEBSERVER = false;
+      Serial.println("WiFi disconnect"); 
+      MEASURE = true;
+      GOSLEEP = true;
+    }
+    if ((millis() - SensorUpdate) >= 5000) {
       SensorUpdate = millis();
       LEDredgreen();
-      readSHT11();                            // read SHT11
-      Serial.println("HUM Luft : " + String(humSHT11) + "%"); 
-      Serial.println("TMP Luft : " + String(tmpSHT11) + "ºC");
+      digitalWrite(LED2, HIGH);
+      digitalWrite(LED1, LOW);
+      readSHT11();                            // read SHT1
       readDS18B20();                          // read DS18B20
-      Serial.println("TMP Wand: " + String(tmpDS18B20) + "ºC");
       calcDP();                               // calculate drew point
-      Serial.println("TP: " + String(dp) + "ºC"); 
+      int numClients = WiFi.softAPgetStationNum();
+      if (numClients > 0) {
+        wifiAvailable = millis() + 60000;     // keep wifi online for 60 more secounds
+      }
+      // Serial.println("Number of clients connected: " + String(numClients));
     }
+    
+    server.handleClient();                  // you must call this handleClient repeatidly
+    digitalWrite(LED2, HIGH);
+    digitalWrite(LED1, LOW);
   }
-  // no matter what you must call this handleClient repeatidly--otherwise the web page
-  // will not get instructions to do something
-  server.handleClient();
 
-
-  
+    
  // loopCAPTIVE();                            // active captive        
   if (MEASURE) {
     LEDredgreen();
@@ -196,14 +145,14 @@ void loop(){
     if (heatCycles < 1) {                       // active heat 
       Serial.println("STOPP - heizen"); 
       relaisOFF();
-      EEPROM.get(adrBMZ, BMZ);                  // get BMZ
+      EEPROM.get(0, BMZ);                  // get BMZ
       BMZ = BMZ + heatMinutes;                  // add BMZ
-      EEPROM.put(adrBMZ, BMZ);                  // store BMZ                        
+      EEPROM.put(0, BMZ);                  // store BMZ                        
       EEPROM.commit(); delay(10);               // commit store  
       activeHeat = false;
       actionHeat = false;
       actionReg = true; }
-    --heatCycles;  
+      --heatCycles;  
   } // exit action heat
 
   if (actionReg) {                              // action recovery
@@ -219,8 +168,14 @@ void loop(){
       MEASURE = true; }
     --regenerateCycles;
   } // exit action heat
+
   espSleep();
+
 } // exit loop
+
+
+
+
 
 
 

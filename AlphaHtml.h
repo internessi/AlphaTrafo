@@ -183,7 +183,7 @@ const char PAGE_MAIN[] PROGMEM = R"=====(
   
     <main class="container" style="margin-top:70px">
     <center>
-      <div class="category">Trafosteuerung</div>
+      <div class="category" id = "a0"></div>
             <div class="categoryunder" id = "datetime">mm/dd/yyyy</div>
             <br>
       <div style="border-radius: 10px !important;">
@@ -311,6 +311,9 @@ const char PAGE_MAIN[] PROGMEM = R"=====(
   </main>
   
   <footer> 
+    <div class="foot">Diese Seite wird jede Sekunde aktualisiert, die Sensoren alle 5 Sekunden.</div>
+    <div class="foot">Eine Minute nachdem diese Seite geschlossen wird, trennt die Steuerung </div>
+    <div class="foot">die Wlan-Verbindung und geht in den Normalbetrieb ohne Webseite.</div>
     <br> 
     <br>
     <div class="foot">ALPHATHERM Zwickau GmbH</div>
@@ -390,6 +393,10 @@ const char PAGE_MAIN[] PROGMEM = R"=====(
   
       // get host date and time
       document.getElementById("datetime").innerHTML = dt.toLocaleDateString() + " " + dt.toLocaleTimeString();
+
+      xmldoc = xmlResponse.getElementsByTagName("A0"); 
+      message = xmldoc[0].firstChild.nodeValue;
+      document.getElementById("a0").innerHTML="Trafosteuerung "+message;
 
       xmldoc = xmlResponse.getElementsByTagName("S0"); 
       message = xmldoc[0].firstChild.nodeValue;
